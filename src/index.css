@@ -91,8 +91,12 @@
     --color-green-500: oklch(.723 .219 149.579);
     --color-emerald-500: oklch(.696 .17 162.48);
     --color-teal-600: oklch(.6 .118 184.704);
+    --color-cyan-200: oklch(.9 0.09 211.53);
+    --color-cyan-300: oklch(.85 0.13 211.53);
     --color-cyan-400: oklch(.789 .154 211.53);
     --color-cyan-500: oklch(.715 .143 215.221);
+    --color-blue-200: oklch(.88 0.07 254.624);
+    --color-blue-300: oklch(.8 0.12 254.624);
     --color-blue-400: oklch(.707 .165 254.624);
     --color-blue-500: oklch(.623 .214 259.815);
     --color-blue-600: oklch(.546 .245 262.881);
@@ -131,6 +135,33 @@
     --color-neutral-300: oklch(.87 0 0);
     --color-black: #000;
     --color-white: #fff;
+
+    /* 🎨 Launchpad - Complete Color System */
+    --lp-deep-red: #B1122C;
+    --lp-electric-blue: #00A9FF;
+    --lp-primary-red: #FF3A4A;
+    --lp-primary-blue: #4AD4FF;
+    --lp-text-fire: #FF5E63;
+    --lp-text-ice: #4AD4FF;
+    --lp-red-dark: #7F0B1E;
+    --lp-red-shadow: #4A040F;
+
+    /* Gradients */
+    --lp-gradient-dual: linear-gradient(135deg, #7F0B1E 0%, #B1122C 30%, #FF3A4A 55%, #00A9FF 80%, #00A9FF 100%);
+    --lp-gradient-border-dual: linear-gradient(135deg, #B1122C 0%, #00A9FF 100%);
+    --lp-gradient-fire: linear-gradient(135deg, #4A040F 0%, #7F0B1E 50%, #B1122C 100%);
+    --lp-gradient-ice: linear-gradient(135deg, #00A9FF 0%, #4AD4FF 100%);
+    --lp-gradient-branding: linear-gradient(135deg, #FF3A4A 0%, #00A9FF 100%);
+
+    /* Backgrounds */
+    --lp-bg-glass: rgba(255, 255, 255, 0.05);
+    --lp-bg-glass-dark: rgba(0, 0, 0, 0.4);
+    --lp-bg-solid: rgba(15, 23, 42, 0.95);
+
+    /* Path Card Backgrounds */
+    --lp-bg-fire-card: linear-gradient(145deg, rgba(40, 15, 20, 1) 0%, rgba(25, 10, 15, 1) 50%, rgba(15, 8, 12, 1) 100%);
+    --lp-bg-ice-card: linear-gradient(145deg, rgba(15, 25, 40, 1) 0%, rgba(10, 18, 30, 1) 50%, rgba(5, 12, 22, 1) 100%);
+
     --spacing: .25rem;
     --container-md: 28rem;
     --container-xl: 36rem;
@@ -5799,4 +5830,9 @@ html {
   backface-visibility: hidden;
   -webkit-perspective: 1000;
   perspective: 1000;
+}
+
+/* Custom Utilities */
+.bg-gradient-radial {
+  background-image: radial-gradient(var(--tw-gradient-stops));
 }

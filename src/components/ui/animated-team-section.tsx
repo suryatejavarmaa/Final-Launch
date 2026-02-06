@@ -101,7 +101,7 @@ const AnimatedTeamSection = React.forwardRef<
           {members.map((member, index) => (
             <motion.div
               key={index}
-              className="absolute w-28 h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-2xl overflow-hidden shadow-lg"
+              className="absolute w-28 h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-3xl overflow-hidden shadow-lg"
               style={{
                 zIndex: members.length - Math.abs(index - (members.length - 1) / 2),
                 boxShadow: "0 10px 40px rgba(0, 169, 255, 0.3)",

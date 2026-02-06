@@ -72,7 +72,7 @@ export function Footer() {
             {/* Logo - ONLY gradient text */}
             <h3 className="text-2xl font-bold lp-text-gradient mb-4">Launchpad</h3>
             <p className="text-slate-400 text-sm">
-              Two paths. One beginning. Your journey from Zero to One starts here. Innovating the future with cutting-edge technology solutions.
+              <span className="font-medium text-white">One Life. One Story.</span> Your journey from Student to Founder in 90 days starts here.
             </p>
           </div>
 

@@ -44,14 +44,26 @@ export function ApplicationForm() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-16"
         >
-          {/* Gradient heading - ACCENT USE */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 px-4 text-white">
-            Join the <span className="text-glow-red">Launchpad</span>
+          {/* Emotional progression */}
+          <div className="space-y-2 mb-6">
+            <p className="text-lg sm:text-xl text-slate-400">
+              If you want a degree, stay comfortable.
+            </p>
+            <p className="text-lg sm:text-xl text-slate-300">
+              If you want a career, <span className="text-white">skill up.</span>
+            </p>
+            <p className="text-xl sm:text-2xl font-semibold text-white">
+              If you want <span className="font-bold">power over your future...</span>
+            </p>
+          </div>
+          {/* Main CTA heading */}
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 px-4 lp-text-gradient">
+            Join Launchpad
           </h2>
-          {/* Neutral description */}
-          <h3 className="text-lg sm:text-xl px-4 text-slate-400">
-            Take the first step on your journey from Zero to One. Applications for Spring 2025 cohort are now open.
-          </h3>
+          {/* Tagline */}
+          <p className="text-lg sm:text-xl px-4 text-slate-300">
+            Limited seats. <span className="text-white font-medium">Hurry up.</span>
+          </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -195,15 +207,15 @@ export function ApplicationForm() {
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 mt-4"
                   style={{ background: DUAL_GRADIENT }}
                 >
-                  Open Form <ArrowRight className="w-4 h-4" />
+                  Welcome to Bristletech Launchpad <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
             </div>
 
             <div className="text-center sm:col-span-2 pt-2">
-              <p className="text-slate-500 text-xs flex items-center justify-center gap-2">
+              <p className="text-slate-400 text-sm flex items-center justify-center gap-2">
                 <Sparkles className="w-3 h-3 text-yellow-500" />
-                <span>Secure your spot for Spring 2025</span>
+                <span className="font-medium">One Life. One Story.</span>
               </p>
             </div>
 

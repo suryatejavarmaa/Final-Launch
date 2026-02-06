@@ -76,29 +76,29 @@ export function OrbitalCareerTimeline() {
   return (
     <motion.section
       className="bg-slate-950 py-12 md:py-14"
-      initial={{ 
-        opacity: 0, 
+      initial={{
+        opacity: 0,
         scale: 0.9,
         rotateX: 15,
         filter: "blur(12px)",
         y: 100
       }}
-      whileInView={{ 
-        opacity: 1, 
+      whileInView={{
+        opacity: 1,
         scale: 1,
         rotateX: 0,
         filter: "blur(0px)",
         y: 0
       }}
       viewport={{ once: true, margin: "-150px" }}
-      transition={{ 
+      transition={{
         duration: 1.2,
         type: "spring",
         stiffness: 60,
         damping: 20,
         delay: 0.2
       }}
-      style={{ 
+      style={{
         perspective: '2000px',
         transformStyle: 'preserve-3d'
       }}
@@ -107,7 +107,7 @@ export function OrbitalCareerTimeline() {
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ 
+        transition={{
           duration: 0.8,
           delay: 0.3,
           type: "spring",

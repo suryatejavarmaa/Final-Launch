@@ -1,15 +1,22 @@
 import React from 'react';
 
 // Types for component props
+interface HeadlineLine {
+  text: string;
+  colorClass?: string; // CSS class for coloring
+  style?: React.CSSProperties;
+  isSmall?: boolean; // For smaller text like "This is"
+}
+
 interface HeroProps {
   trustBadge?: {
     text: string;
     icons?: string[];
   };
   headline: {
-    line1: string;
-    line2: string;
+    lines: HeadlineLine[];
   };
+  tagline?: string;
   subtitle: string;
   buttons?: {
     primary?: {
@@ -24,10 +31,11 @@ interface HeroProps {
   className?: string;
 }
 
-// Simplified Hero Component without background effects
+// Hero Component with multi-line headline support
 const Hero: React.FC<HeroProps> = ({
   trustBadge,
   headline,
+  tagline,
   subtitle,
   buttons,
   className = ""
@@ -69,37 +77,53 @@ const Hero: React.FC<HeroProps> = ({
         )}
 
         <div className="text-center space-y-6 max-w-5xl mx-auto px-4">
-          {/* Main Heading with Gradient - ACCENT USE */}
-          <div className="space-y-2">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold lp-text-gradient animate-fade-in-up animation-delay-200">
-              {headline.line1}
-            </h1>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold lp-text-gradient animate-fade-in-up animation-delay-400">
-              {headline.line2}
-            </h1>
+          {/* Main Headlines - Multi-line with individual colors */}
+          <div className="space-y-1">
+            {headline.lines.map((line, index) => (
+              <h1
+                key={index}
+                className={`${line.isSmall
+                  ? 'text-xl md:text-2xl lg:text-3xl font-normal'
+                  : 'text-4xl md:text-6xl lg:text-7xl font-bold'
+                  } animate-fade-in-up ${line.colorClass || ''}`}
+                style={{
+                  animationDelay: `${200 + index * 150}ms`,
+                  ...line.style
+                }}
+              >
+                {line.text}
+              </h1>
+            ))}
           </div>
 
           {/* Tagline - Neutral Color */}
-          <div className="animate-fade-in-up animation-delay-500">
-            <p className="text-lg md:text-xl font-medium tracking-widest uppercase text-slate-400">
-              One life. One story.
-            </p>
-          </div>
+          {tagline && (
+            <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+              <p className="text-lg md:text-xl font-medium tracking-widest uppercase text-slate-400">
+                {tagline}
+              </p>
+            </div>
+          )}
 
           {/* Subtitle - Neutral Color */}
-          <div className="max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
+          <div className="max-w-3xl mx-auto animate-fade-in-up" style={{ animationDelay: '600ms' }}>
             <p className="text-lg md:text-xl lg:text-2xl leading-relaxed text-slate-300">
               {subtitle}
             </p>
           </div>
 
-          {/* CTA Buttons - ACCENT USE for primary button only */}
+          {/* CTA Buttons */}
           {buttons && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-fade-in-up animation-delay-800">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-fade-in-up" style={{ animationDelay: '800ms' }}>
               {buttons.primary && (
                 <button
                   onClick={buttons.primary.onClick}
-                  className="px-8 py-4 lp-btn-primary rounded-full text-lg font-medium text-white transition-all duration-300 hover:scale-105"
+                  className="px-8 py-4 rounded-full text-lg font-semibold text-white transition-all duration-300 hover:scale-105 backdrop-blur-xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    boxShadow: '0 0 30px rgba(255, 255, 255, 0.1)'
+                  }}
                 >
                   {buttons.primary.text}
                 </button>
@@ -125,3 +149,4 @@ const Hero: React.FC<HeroProps> = ({
 };
 
 export default Hero;
+
