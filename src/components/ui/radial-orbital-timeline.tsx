@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ArrowRight, Link, Zap } from "lucide-react";
 import { Badge } from "./badge";
 import { Button } from "./button";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { motion, AnimatePresence } from "motion/react";
 
 interface TimelineItem {
@@ -25,17 +24,10 @@ interface RadialOrbitalTimelineProps {
 export default function RadialOrbitalTimeline({
   timelineData,
 }: RadialOrbitalTimelineProps) {
-  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>(
-    {}
-  );
-  const [viewMode, setViewMode] = useState<"orbital">("orbital");
+  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>({});
   const [rotationAngle, setRotationAngle] = useState<number>(0);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
   const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
-  const [centerOffset, setCenterOffset] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
   const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [userInteracted, setUserInteracted] = useState<boolean>(false);
@@ -45,24 +37,23 @@ export default function RadialOrbitalTimeline({
   const animationFrameRef = useRef<number>();
   const lastAutoExpandedId = useRef<number | null>(null);
 
-  // Detect mobile on mount
+  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Responsive radius based on screen size
+  // Orbit radius - smaller for left-side view
   const orbitRadius = useMemo(() => {
-    if (isMobile) return 120;
-    return 220;
+    if (isMobile) return 140;
+    return 200;
   }, [isMobile]);
 
+  // Reset handler
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === containerRef.current || e.target === orbitRef.current) {
+    if (e.target === containerRef.current) {
       setExpandedItems({});
       setActiveNodeId(null);
       setPulseEffect({});
@@ -71,6 +62,7 @@ export default function RadialOrbitalTimeline({
     }
   };
 
+  // Toggle node expansion
   const toggleItem = useCallback((id: number, isManual = false) => {
     if (isManual) {
       setUserInteracted(true);
@@ -83,7 +75,6 @@ export default function RadialOrbitalTimeline({
           newState[parseInt(key)] = false;
         }
       });
-
       newState[id] = !prev[id];
 
       if (!prev[id]) {
@@ -92,7 +83,6 @@ export default function RadialOrbitalTimeline({
           setAutoRotate(false);
           centerViewOnNode(id);
         }
-
         const relatedItems = getRelatedItems(id);
         const newPulseEffect: Record<number, boolean> = {};
         relatedItems.forEach((relId) => {
@@ -106,7 +96,6 @@ export default function RadialOrbitalTimeline({
         }
         setPulseEffect({});
       }
-
       return newState;
     });
   }, []);
@@ -116,38 +105,29 @@ export default function RadialOrbitalTimeline({
     return currentItem ? currentItem.relatedIds : [];
   }, [timelineData]);
 
-  // Calculate which node is at the display position (top-center at 270°)
+  // Get node at display position (right side of orbit = 0°)
   const getNodeAtDisplayPosition = useCallback(() => {
-    const displayAngle = 270; // Top-center position
-    const threshold = 25; // Degrees of tolerance
+    const displayAngle = 0; // Right side of the orbit faces the content
+    const threshold = 30;
 
     for (let i = 0; i < timelineData.length; i++) {
       const nodeAngle = ((i / timelineData.length) * 360 + rotationAngle) % 360;
-
-      // Calculate the smallest angular difference
       let diff = Math.abs(nodeAngle - displayAngle);
-      if (diff > 180) {
-        diff = 360 - diff;
-      }
-
+      if (diff > 180) diff = 360 - diff;
       if (diff < threshold) {
         return timelineData[i].id;
       }
     }
-
     return null;
   }, [rotationAngle, timelineData]);
 
   // Auto-expand node at display position
   useEffect(() => {
     if (!autoRotate || userInteracted) return;
-
     const nodeAtDisplay = getNodeAtDisplayPosition();
 
     if (nodeAtDisplay !== null && nodeAtDisplay !== lastAutoExpandedId.current) {
       lastAutoExpandedId.current = nodeAtDisplay;
-
-      // Auto-expand the node at display position
       setExpandedItems({ [nodeAtDisplay]: true });
       setActiveNodeId(nodeAtDisplay);
 
@@ -160,245 +140,279 @@ export default function RadialOrbitalTimeline({
     }
   }, [rotationAngle, autoRotate, userInteracted, getNodeAtDisplayPosition, getRelatedItems]);
 
-  // Smooth rotation using requestAnimationFrame
+  // Smooth continuous rotation
   useEffect(() => {
     let lastTime = performance.now();
 
     const animate = (currentTime: number) => {
-      if (autoRotate && viewMode === "orbital") {
+      if (autoRotate) {
         const deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
         setRotationAngle((prev) => {
-          // Slow down when displaying content for better readability
-          const baseSpeed = isMobile ? 0.15 : 0.2;
-          const displaySpeed = activeNodeId && !userInteracted ? 0.08 : baseSpeed;
-          // Clockwise rotation (to the right)
+          const baseSpeed = isMobile ? 0.12 : 0.15;
+          const displaySpeed = activeNodeId && !userInteracted ? 0.06 : baseSpeed;
           const newAngle = (prev + (displaySpeed * deltaTime / 16.67)) % 360;
           return Number(newAngle.toFixed(2));
         });
-
-        animationFrameRef.current = requestAnimationFrame(animate);
       }
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
-    if (autoRotate && viewMode === "orbital") {
-      animationFrameRef.current = requestAnimationFrame(animate);
-    }
+    animationFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [autoRotate, viewMode, isMobile, activeNodeId, userInteracted]);
+  }, [autoRotate, isMobile, activeNodeId, userInteracted]);
 
+  // Center view on clicked node
   const centerViewOnNode = (nodeId: number) => {
-    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
-
     const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
     const totalNodes = timelineData.length;
     const targetAngle = (nodeIndex / totalNodes) * 360;
-
-    setRotationAngle(270 - targetAngle);
+    setRotationAngle(360 - targetAngle); // Bring to right side (0°)
   };
 
+  // Calculate node position on the orbit
   const calculateNodePosition = useCallback((index: number, total: number) => {
     const angle = ((index / total) * 360 + rotationAngle) % 360;
     const radian = (angle * Math.PI) / 180;
 
-    const x = orbitRadius * Math.cos(radian) + centerOffset.x;
-    const y = orbitRadius * Math.sin(radian) + centerOffset.y;
+    const x = orbitRadius * Math.cos(radian);
+    const y = orbitRadius * Math.sin(radian);
 
     const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Math.max(
-      0.5,
-      Math.min(1, 0.5 + 0.5 * ((1 + Math.sin(radian)) / 2))
-    );
-
-    const scale = Math.max(0.8, Math.min(1, 0.8 + 0.2 * ((1 + Math.sin(radian)) / 2)));
+    const opacity = Math.max(0.4, Math.min(1, 0.5 + 0.5 * ((1 + Math.cos(radian)) / 2)));
+    const scale = Math.max(0.7, Math.min(1.1, 0.8 + 0.3 * ((1 + Math.cos(radian)) / 2)));
 
     return { x, y, angle, zIndex, opacity, scale };
-  }, [rotationAngle, orbitRadius, centerOffset]);
+  }, [rotationAngle, orbitRadius]);
 
   const isRelatedToActive = (itemId: number): boolean => {
     if (!activeNodeId) return false;
-    const relatedItems = getRelatedItems(activeNodeId);
-    return relatedItems.includes(itemId);
+    return getRelatedItems(activeNodeId).includes(itemId);
   };
 
-  const getStatusStyles = (status: TimelineItem["status"]): string => {
+  // Get active item for content panel
+  const activeItem = useMemo(() => {
+    return timelineData.find(item => item.id === activeNodeId) || null;
+  }, [activeNodeId, timelineData]);
+
+  const getStatusColor = (status: TimelineItem["status"]) => {
     switch (status) {
       case "completed":
-        return "text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-white";
+        return { bg: "linear-gradient(135deg, #B1122C 0%, #FF3A4A 100%)", text: "#FF5E63", label: "ENTREPRENEUR" };
       case "in-progress":
-        return "text-black bg-gradient-to-r from-blue-400 to-cyan-400 border-black";
-      case "pending":
-        return "text-white bg-black/40 border-white/50";
+        return { bg: "linear-gradient(135deg, #00A9FF 0%, #4AD4FF 100%)", text: "#4AD4FF", label: "CAREER" };
       default:
-        return "text-white bg-black/40 border-white/50";
+        return { bg: "rgba(255, 255, 255, 0.15)", text: "#94A3B8", label: "UPCOMING" };
     }
   };
 
+  // Star particles
+  const stars = useMemo(() => {
+    return Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 1.5 + 0.5,
+      opacity: Math.random() * 0.4 + 0.1,
+      delay: Math.random() * 4,
+    }));
+  }, []);
+
   return (
     <div
-      className="w-full min-h-screen flex flex-col items-center justify-center bg-slate-950 overflow-hidden py-12 md:py-0"
+      className="w-full min-h-screen relative overflow-hidden flex"
+      style={{ backgroundColor: '#0A0F1C' }}
       ref={containerRef}
       onClick={handleContainerClick}
     >
-      {/* Title Section - Mobile Optimized */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center mb-6 md:mb-8 px-4 relative z-20"
-      >
-        <h2 className="text-3xl md:text-5xl bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-          Career Journey Map
-        </h2>
-        <p className="text-indigo-300/70 text-sm md:text-base">
-          {isMobile ? "Tap nodes to explore your path" : "Click any node to explore your career path"}
-        </p>
-      </motion.div>
+      {/* Star particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {stars.map((star) => (
+          <motion.div
+            key={star.id}
+            className="absolute rounded-full bg-white"
+            style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.size, height: star.size }}
+            animate={{ opacity: [star.opacity, star.opacity * 0.2, star.opacity] }}
+            transition={{ duration: 3 + star.delay, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
+      </div>
 
-      <div className="relative w-full max-w-5xl h-[600px] md:h-[700px] flex items-center justify-center px-4">
+      {/* Ambient glow */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: '600px',
+          height: '600px',
+          left: isMobile ? '-100px' : '5%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'radial-gradient(circle, rgba(0, 169, 255, 0.15) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+        }}
+      />
+
+      {/* ========== LEFT SIDE: ORBITAL SYSTEM ========== */}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: isMobile ? '50%' : '50%', minHeight: '100vh' }}
+      >
         <div
-          className="absolute w-full h-full flex items-center justify-center"
+          className="relative"
           ref={orbitRef}
           style={{
-            perspective: "1500px",
-            transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
+            width: `${orbitRadius * 2 + 120}px`,
+            height: `${orbitRadius * 2 + 120}px`,
           }}
         >
-          {/* Enhanced Central Core */}
+          {/* Central Sun/Core - Logo centered in orbit */}
           <motion.div
-            className="absolute rounded-full bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 flex items-center justify-center z-10"
+            className="absolute rounded-full flex items-center justify-center overflow-hidden cursor-pointer"
             style={{
-              width: isMobile ? '48px' : '64px',
-              height: isMobile ? '48px' : '64px',
+              left: '50%',
+              top: '50%',
+              marginLeft: isMobile ? '-40px' : '-55px',
+              marginTop: isMobile ? '-40px' : '-55px',
+              width: isMobile ? '80px' : '110px',
+              height: isMobile ? '80px' : '110px',
+              background: 'rgba(10, 15, 28, 0.9)',
+              border: '2px solid rgba(74, 212, 255, 0.4)',
+              boxShadow: '0 0 40px rgba(0, 169, 255, 0.4), 0 0 80px rgba(0, 169, 255, 0.2)',
+              zIndex: 10,
             }}
             animate={{
               boxShadow: [
-                '0 0 20px rgba(139, 92, 246, 0.5)',
-                '0 0 40px rgba(59, 130, 246, 0.7)',
-                '0 0 20px rgba(139, 92, 246, 0.5)',
+                '0 0 30px rgba(0, 169, 255, 0.4), 0 0 60px rgba(0, 169, 255, 0.2)',
+                '0 0 50px rgba(0, 169, 255, 0.6), 0 0 100px rgba(0, 169, 255, 0.3)',
+                '0 0 30px rgba(0, 169, 255, 0.4), 0 0 60px rgba(0, 169, 255, 0.2)',
               ],
             }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpandedItems({});
+              setActiveNodeId(null);
+              setPulseEffect({});
+              setAutoRotate(true);
+              setUserInteracted(false);
             }}
           >
-            {/* Static rings - no animation */}
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full border border-white/20"
-                style={{
-                  width: isMobile ? `${64 + i * 20}px` : `${80 + i * 28}px`,
-                  height: isMobile ? `${64 + i * 20}px` : `${80 + i * 28}px`,
-                  opacity: 0.4 - i * 0.1,
-                }}
-              />
-            ))}
-
-            {/* Static core glow */}
-            <div
-              className="rounded-full bg-white/90"
+            {/* Logo image - fills entire space */}
+            <img
+              src="/src/components/figma/4_cropped_processed_by_imagy.png"
+              alt="Launchpad Logo"
+              className="object-cover rounded-full"
               style={{
-                width: isMobile ? '24px' : '32px',
-                height: isMobile ? '24px' : '32px',
+                width: '100%',
+                height: '100%',
+                filter: 'drop-shadow(0 0 15px rgba(74, 212, 255, 0.5))',
               }}
             />
           </motion.div>
 
-          {/* Static orbit ring */}
+          {/* Orbit Path Ring */}
           <div
-            className="absolute rounded-full border border-indigo-400/20"
+            className="absolute rounded-full border border-cyan-500/20"
             style={{
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
               width: `${orbitRadius * 2}px`,
               height: `${orbitRadius * 2}px`,
-              boxShadow: '0 0 30px rgba(99, 102, 241, 0.15)',
+              boxShadow: '0 0 20px rgba(0, 169, 255, 0.1)',
             }}
           />
 
-          {/* Display position indicator - Top center */}
-          <motion.div
-            className="absolute pointer-events-none"
-            style={{
-              top: `calc(50% - ${orbitRadius + (isMobile ? 20 : 30)}px)`,
-              left: '50%',
-              transform: 'translateX(-50%)',
-            }}
-            animate={{
-              opacity: autoRotate && !userInteracted ? [0.4, 0.8, 0.4] : 0,
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-indigo-400/60" />
-              <div className={`${isMobile ? 'text-[9px]' : 'text-xs'} text-indigo-400/60 font-mono whitespace-nowrap`}>
-                DISPLAY ZONE
-              </div>
-            </div>
-          </motion.div>
+          {/* Spotlight Beam - Elegant glow emanating from active node toward content */}
+          {activeNodeId && (() => {
+            const activeIndex = timelineData.findIndex(item => item.id === activeNodeId);
+            const activePos = calculateNodePosition(activeIndex, timelineData.length);
+            const statusColor = getStatusColor(timelineData[activeIndex]?.status || 'pending');
 
-          {/* Connection lines for active node */}
+            return (
+              <motion.div
+                className="absolute pointer-events-none"
+                style={{
+                  left: `calc(50% + ${activePos.x}px)`,
+                  top: `calc(50% + ${activePos.y}px)`,
+                  width: isMobile ? '300px' : '500px',
+                  height: '80px',
+                  transform: 'translate(-20px, -50%)',
+                  background: `linear-gradient(90deg, ${statusColor.text}50 0%, ${statusColor.text}20 30%, transparent 70%)`,
+                  filter: 'blur(20px)',
+                  zIndex: 4,
+                }}
+                initial={{ opacity: 0, scaleX: 0 }}
+                animate={{ opacity: 0.6, scaleX: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              />
+            );
+          })()}
+
+          {/* Connection lines between related nodes */}
           {activeNodeId && (
             <svg
               className="absolute inset-0 pointer-events-none"
-              style={{
-                width: '100%',
-                height: '100%',
-                zIndex: 5,
-              }}
+              style={{ width: '100%', height: '100%', zIndex: 5 }}
             >
-              {getRelatedItems(activeNodeId).map((relatedId) => {
+              {/* Connect to NEXT and PREVIOUS nodes in sequence */}
+              {(() => {
                 const activeIndex = timelineData.findIndex(item => item.id === activeNodeId);
-                const relatedIndex = timelineData.findIndex(item => item.id === relatedId);
-                const activePos = calculateNodePosition(activeIndex, timelineData.length);
-                const relatedPos = calculateNodePosition(relatedIndex, timelineData.length);
+                const total = timelineData.length;
+                const activePos = calculateNodePosition(activeIndex, total);
+                const centerX = orbitRadius + 60;
+                const centerY = orbitRadius + 60;
 
-                const centerX = orbitRef.current ? orbitRef.current.offsetWidth / 2 : 0;
-                const centerY = orbitRef.current ? orbitRef.current.offsetHeight / 2 : 0;
+                // Get previous and next indices (wrap around)
+                const prevIndex = activeIndex === 0 ? total - 1 : activeIndex - 1;
+                const nextIndex = activeIndex === total - 1 ? 0 : activeIndex + 1;
 
-                return (
-                  <motion.line
-                    key={`line-${activeNodeId}-${relatedId}`}
-                    x1={centerX + activePos.x}
-                    y1={centerY + activePos.y}
-                    x2={centerX + relatedPos.x}
-                    y2={centerY + relatedPos.y}
-                    stroke="url(#gradient-line)"
-                    strokeWidth={isMobile ? "1.5" : "2"}
-                    strokeDasharray="5,5"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 0.5 }}
-                    exit={{ pathLength: 0, opacity: 0 }}
-                    transition={{ duration: 0.6 }}
-                  />
-                );
-              })}
+                const adjacentIndices = [prevIndex, nextIndex];
+
+                return adjacentIndices.map((adjIndex) => {
+                  const adjPos = calculateNodePosition(adjIndex, total);
+                  return (
+                    <motion.line
+                      key={`line-${activeIndex}-${adjIndex}`}
+                      x1={centerX + activePos.x}
+                      y1={centerY + activePos.y}
+                      x2={centerX + adjPos.x}
+                      y2={centerY + adjPos.y}
+                      stroke="url(#gradient-line)"
+                      strokeWidth="2"
+                      strokeDasharray="5,5"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 0.6 }}
+                      transition={{ duration: 0.6 }}
+                    />
+                  );
+                });
+              })()}
               <defs>
                 <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="rgb(99, 102, 241)" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="rgb(139, 92, 246)" stopOpacity="0.3" />
+                  <stop offset="0%" stopColor="#00A9FF" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#4AD4FF" stopOpacity="0.3" />
                 </linearGradient>
               </defs>
             </svg>
           )}
 
+          {/* Orbiting Nodes */}
           {timelineData.map((item, index) => {
             const position = calculateNodePosition(index, timelineData.length);
             const isExpanded = expandedItems[item.id];
             const isRelated = isRelatedToActive(item.id);
             const isPulsing = pulseEffect[item.id];
             const Icon = item.icon;
+            const statusColor = getStatusColor(item.status);
 
             return (
               <motion.div
@@ -406,243 +420,306 @@ export default function RadialOrbitalTimeline({
                 ref={(el) => (nodeRefs.current[item.id] = el)}
                 className="absolute cursor-pointer"
                 style={{
+                  left: '50%',
+                  top: '50%',
                   zIndex: isExpanded ? 200 : position.zIndex,
                 }}
-                initial={{ scale: 0, opacity: 0 }}
                 animate={{
                   x: position.x,
                   y: position.y,
-                  scale: isExpanded ? 1 : position.scale,
+                  scale: isExpanded ? 1.2 : position.scale,
                   opacity: isExpanded ? 1 : position.opacity,
                 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 100,
-                  damping: 20,
-                  mass: 0.8,
-                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleItem(item.id, true);
                 }}
               >
-                {/* Static energy glow effect */}
-                <div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    background: `radial-gradient(circle, rgba(99, 102, 241, ${isPulsing ? 0.35 : 0.2}) 0%, rgba(139, 92, 246, 0) 70%)`,
-                    width: isMobile ? `${item.energy * 0.35 + 30}px` : `${item.energy * 0.5 + 40}px`,
-                    height: isMobile ? `${item.energy * 0.35 + 30}px` : `${item.energy * 0.5 + 40}px`,
-                    left: isMobile ? `-${(item.energy * 0.35 + 30 - 32) / 2}px` : `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                    top: isMobile ? `-${(item.energy * 0.35 + 30 - 32) / 2}px` : `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                    opacity: isPulsing ? 0.8 : 0.5,
-                    transition: 'opacity 0.3s ease-out',
-                  }}
-                />
+                {/* Energy glow - only show when active */}
+                {isExpanded && (
+                  <div
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      width: `${item.energy * 0.6 + 40}px`,
+                      height: `${item.energy * 0.6 + 40}px`,
+                      left: '50%',
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: `radial-gradient(circle, ${statusColor.text}60 0%, transparent 70%)`,
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
 
-                {/* Node circle */}
+                {/* Node circle - transparent when inactive, filled when active */}
                 <motion.div
-                  className={`
-                    rounded-full flex items-center justify-center relative overflow-hidden
-                    ${isExpanded
-                      ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white"
-                      : isRelated
-                        ? "bg-gradient-to-br from-blue-400 to-cyan-400 text-black"
-                        : "bg-slate-900/90 backdrop-blur-sm text-white"
-                    }
-                    border-2 
-                    ${isExpanded
-                      ? "border-white"
-                      : isRelated
-                        ? "border-blue-400"
-                        : "border-indigo-400/40"
-                    }
-                  `}
+                  className="rounded-full flex items-center justify-center border-2 -translate-x-1/2 -translate-y-1/2"
                   style={{
-                    width: isMobile ? '32px' : '40px',
-                    height: isMobile ? '32px' : '40px',
-                  }}
-                  animate={{
-                    scale: isExpanded ? (isMobile ? 1.3 : 1.5) : 1,
+                    width: isMobile ? '36px' : '44px',
+                    height: isMobile ? '36px' : '44px',
+                    background: isExpanded
+                      ? statusColor.bg
+                      : 'rgba(10, 15, 28, 0.85)',
+                    borderColor: isExpanded
+                      ? '#FFFFFF'
+                      : statusColor.text,
                     boxShadow: isExpanded
-                      ? '0 0 30px rgba(99, 102, 241, 0.6)'
-                      : isRelated
-                        ? '0 0 20px rgba(59, 130, 246, 0.4)'
-                        : '0 0 10px rgba(99, 102, 241, 0.2)',
+                      ? `0 0 35px ${statusColor.text}90, inset 0 0 20px ${statusColor.text}30`
+                      : `0 0 12px ${statusColor.text}50`,
                   }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                  }}
-                  whileHover={{
-                    scale: isExpanded ? (isMobile ? 1.3 : 1.5) : (isMobile ? 1.1 : 1.2),
-                  }}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Icon size={isMobile ? 14 : 16} />
+                  <Icon
+                    size={isMobile ? 14 : 18}
+                    style={{ color: isExpanded ? '#FFFFFF' : statusColor.text }}
+                  />
                 </motion.div>
 
                 {/* Node label */}
-                <motion.div
-                  className={`
-                    absolute whitespace-nowrap pointer-events-none
-                    font-semibold tracking-wider text-center
-                    ${isExpanded ? "text-indigo-200" : "text-indigo-300/70"}
-                  `}
+                <div
+                  className="absolute whitespace-nowrap font-medium text-center -translate-x-1/2"
                   style={{
-                    top: isMobile ? '36px' : '48px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    fontSize: isMobile ? '10px' : '12px',
-                  }}
-                  animate={{
-                    scale: isExpanded ? (isMobile ? 1.1 : 1.25) : 1,
-                    opacity: isExpanded ? 1 : 0.8,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 15,
+                    top: isMobile ? '24px' : '30px',
+                    left: '0',
+                    fontSize: isMobile ? '9px' : '11px',
+                    color: isExpanded ? '#4AD4FF' : '#8BA3C7',
                   }}
                 >
                   {item.title}
-                </motion.div>
-
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 25,
-                      }}
-                      className="absolute left-1/2 -translate-x-1/2"
-                      style={{
-                        top: isMobile ? '50px' : '70px',
-                      }}
-                    >
-                      <Card className={`bg-slate-900/95 backdrop-blur-lg border-indigo-500/30 shadow-xl shadow-indigo-500/20 overflow-visible ${isMobile ? 'w-[280px]' : 'w-72'}`}>
-                        <motion.div
-                          className="absolute -top-3 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-indigo-400 to-transparent"
-                          style={{ height: isMobile ? '12px' : '12px' }}
-                          animate={{
-                            opacity: [0.5, 1, 0.5],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                        <CardHeader className={isMobile ? "pb-2 p-4" : "pb-2"}>
-                          <div className="flex justify-between items-center gap-2">
-                            <Badge
-                              className={`px-2 ${isMobile ? 'text-[10px]' : 'text-xs'} ${getStatusStyles(
-                                item.status
-                              )}`}
-                            >
-                              {item.status === "completed"
-                                ? "MASTERED"
-                                : item.status === "in-progress"
-                                  ? "LEARNING"
-                                  : "UPCOMING"}
-                            </Badge>
-                            <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-mono text-indigo-300/50`}>
-                              {item.date}
-                            </span>
-                          </div>
-                          <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} mt-2 text-white`}>
-                            {item.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className={`${isMobile ? 'text-[11px] p-4 pt-0' : 'text-xs'} text-indigo-100/80`}>
-                          <p className="leading-relaxed">{item.content}</p>
-
-                          <motion.div
-                            className="mt-4 pt-3 border-t border-indigo-500/10"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                          >
-                            <div className={`flex justify-between items-center ${isMobile ? 'text-[10px]' : 'text-xs'} mb-1`}>
-                              <span className="flex items-center text-indigo-200">
-                                <Zap size={isMobile ? 8 : 10} className="mr-1" />
-                                Impact Level
-                              </span>
-                              <span className="font-mono text-indigo-300">{item.energy}%</span>
-                            </div>
-                            <div className={`w-full ${isMobile ? 'h-1.5' : 'h-1'} bg-indigo-950/50 rounded-full overflow-hidden`}>
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${item.energy}%` }}
-                                transition={{
-                                  duration: 1,
-                                  delay: 0.3,
-                                  ease: "easeOut"
-                                }}
-                              />
-                            </div>
-                          </motion.div>
-
-                          {item.relatedIds.length > 0 && (
-                            <motion.div
-                              className="mt-4 pt-3 border-t border-indigo-500/10"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.3 }}
-                            >
-                              <div className="flex items-center mb-2">
-                                <Link size={isMobile ? 8 : 10} className="text-indigo-300/70 mr-1" />
-                                <h4 className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider font-medium text-indigo-300/70`}>
-                                  Related Paths
-                                </h4>
-                              </div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {item.relatedIds.map((relatedId, idx) => {
-                                  const relatedItem = timelineData.find(
-                                    (i) => i.id === relatedId
-                                  );
-                                  return (
-                                    <motion.div
-                                      key={relatedId}
-                                      initial={{ opacity: 0, x: -10 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      transition={{ delay: 0.4 + idx * 0.1 }}
-                                    >
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className={`flex items-center ${isMobile ? 'h-6 px-2 text-[10px]' : 'h-6 px-2 text-xs'} rounded-md border-indigo-400/20 bg-transparent hover:bg-indigo-500/10 text-indigo-200/80 hover:text-indigo-100 transition-all hover:border-indigo-400/40`}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleItem(relatedId);
-                                        }}
-                                      >
-                                        {relatedItem?.title}
-                                        <ArrowRight
-                                          size={isMobile ? 7 : 8}
-                                          className="ml-1 text-indigo-400/60"
-                                        />
-                                      </Button>
-                                    </motion.div>
-                                  );
-                                })}
-                              </div>
-                            </motion.div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                </div>
               </motion.div>
             );
           })}
         </div>
+      </div>
+
+      {/* Ambient matching glow between sections - subtle visual connection */}
+      {activeNodeId && !isMobile && (
+        <motion.div
+          className="absolute pointer-events-none"
+          style={{
+            left: '45%',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '200px',
+            height: '300px',
+            background: `radial-gradient(ellipse at center, ${getStatusColor(activeItem?.status || 'pending').text}15 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+            zIndex: 1,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        />
+      )}
+
+      {/* ========== RIGHT SIDE: CONTENT PANEL ========== */}
+      <div
+        className="relative flex items-center justify-start px-4 lg:px-8"
+        style={{ width: isMobile ? '50%' : '50%', minHeight: '100vh' }}
+      >
+        <AnimatePresence mode="wait">
+          {activeItem ? (
+            <motion.div
+              key={activeItem.id}
+              className="w-full max-w-md"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* ===== GLOWING BACKDROP FOR CONTENT CARD ===== */}
+              {/* Large icon watermark - centered between card and right edge */}
+              <motion.div
+                className="absolute pointer-events-none flex items-center justify-center"
+                style={{
+                  right: isMobile ? '20px' : '40px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  opacity: 0.12,
+                  zIndex: 0,
+                }}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 0.12 }}
+                transition={{ duration: 0.6 }}
+              >
+                <activeItem.icon size={isMobile ? 120 : 160} style={{ color: getStatusColor(activeItem.status).text }} />
+              </motion.div>
+
+              {/* Animated glow rings */}
+              <motion.div
+                className="absolute pointer-events-none rounded-full"
+                style={{
+                  left: isMobile ? '-100px' : '-150px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: isMobile ? '250px' : '350px',
+                  height: isMobile ? '250px' : '350px',
+                  border: `2px solid ${getStatusColor(activeItem.status).text}`,
+                  opacity: 0.15,
+                }}
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.1, 0.2, 0.1],
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div
+                className="absolute pointer-events-none rounded-full"
+                style={{
+                  left: isMobile ? '-60px' : '-100px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: isMobile ? '170px' : '250px',
+                  height: isMobile ? '170px' : '250px',
+                  border: `1px solid ${getStatusColor(activeItem.status).text}`,
+                  opacity: 0.2,
+                }}
+                animate={{
+                  scale: [1, 1.15, 1],
+                  opacity: [0.15, 0.25, 0.15],
+                }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+              />
+
+              {/* Status color spotlight glow */}
+              <motion.div
+                className="absolute pointer-events-none"
+                style={{
+                  left: '-80px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '200px',
+                  height: '300px',
+                  background: `radial-gradient(ellipse at center, ${getStatusColor(activeItem.status).text}30 0%, transparent 70%)`,
+                  filter: 'blur(40px)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4 relative z-10">
+                <motion.div
+                  className="rounded-full flex items-center justify-center"
+                  style={{
+                    width: isMobile ? '44px' : '52px',
+                    height: isMobile ? '44px' : '52px',
+                    background: getStatusColor(activeItem.status).bg,
+                    boxShadow: `0 0 20px ${getStatusColor(activeItem.status).text}50`,
+                  }}
+                  animate={{
+                    boxShadow: [
+                      `0 0 15px ${getStatusColor(activeItem.status).text}40`,
+                      `0 0 30px ${getStatusColor(activeItem.status).text}60`,
+                      `0 0 15px ${getStatusColor(activeItem.status).text}40`,
+                    ],
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                >
+                  <activeItem.icon size={isMobile ? 18 : 22} className="text-white" />
+                </motion.div>
+                <h3 className="font-bold" style={{ fontSize: isMobile ? '18px' : '24px', color: getStatusColor(activeItem.status).text }}>
+                  {activeItem.title}
+                </h3>
+              </div>
+
+              {/* Content Card */}
+              <motion.div
+                className="rounded-2xl overflow-hidden relative z-10"
+                style={{
+                  background: 'rgba(10, 20, 40, 0.9)',
+                  border: `1px solid ${getStatusColor(activeItem.status).text}30`,
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: `0 0 50px ${getStatusColor(activeItem.status).text}15, 0 20px 60px rgba(0,0,0,0.4)`,
+                }}
+              >
+                <div className="h-[3px]" style={{ background: `linear-gradient(90deg, transparent, ${getStatusColor(activeItem.status).text}, ${getStatusColor(activeItem.status).text}, transparent)` }} />
+
+                <div className="p-5 lg:p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-bold"
+                      style={{ background: getStatusColor(activeItem.status).bg }}
+                    >
+                      {getStatusColor(activeItem.status).label}
+                    </span>
+                    <span className="text-xs font-mono" style={{ color: '#64748B' }}>
+                      {activeItem.date}
+                    </span>
+                  </div>
+
+                  <h4 className="text-lg font-bold text-white mb-3">{activeItem.title}</h4>
+                  <p className="leading-relaxed mb-5" style={{ color: '#A8B8CC', fontSize: '14px' }}>
+                    {activeItem.content}
+                  </p>
+
+                  {/* Impact Level */}
+                  <div className="mb-5">
+                    <div className="flex justify-between items-center text-xs mb-2">
+                      <span className="flex items-center gap-1.5" style={{ color: '#FF5E63' }}>
+                        <Zap size={12} /> Impact Level:
+                      </span>
+                      <span className="font-mono font-bold" style={{ color: '#4AD4FF' }}>{activeItem.energy}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(30, 41, 59, 0.8)' }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: 'linear-gradient(90deg, #B1122C, #FF3A4A)' }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${activeItem.energy}%` }}
+                        transition={{ duration: 1 }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Related Tracks */}
+                  {activeItem.relatedIds.length > 0 && (
+                    <div className="pt-4" style={{ borderTop: '1px solid rgba(0, 169, 255, 0.12)' }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Link size={12} style={{ color: '#64748B' }} />
+                        <span className="text-xs" style={{ color: '#64748B' }}>Related Tracks:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {activeItem.relatedIds.map((relatedId) => {
+                          const relatedItem = timelineData.find(i => i.id === relatedId);
+                          return relatedItem ? (
+                            <Button
+                              key={relatedId}
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border-cyan-500/30 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleItem(relatedId, true);
+                              }}
+                            >
+                              {relatedItem.title}
+                              <ArrowRight size={12} className="text-cyan-400" />
+                            </Button>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center"
+              style={{ color: '#64748B' }}
+            >
+              <p className="text-lg mb-2">Select a track to explore</p>
+              <p className="text-sm">Click any node on the orbital</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

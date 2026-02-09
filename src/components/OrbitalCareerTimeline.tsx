@@ -1,75 +1,81 @@
-import { Lightbulb, Layers, Code, Users, Rocket, TrendingUp } from 'lucide-react';
+import { Lightbulb, Palette, Code, Briefcase, TrendingUp, Rocket, Users, Building2 } from 'lucide-react';
 import RadialOrbitalTimeline from './ui/radial-orbital-timeline';
 import { motion } from 'motion/react';
 
 export function OrbitalCareerTimeline() {
-  // Reversed order for clockwise rotation to display phases 1→2→3→4→5→6
+  // 6 nodes alternating: Entrepreneur (red) and Career (blue)
   const timelineData = [
+    // 🔴 ENTREPRENEUR - Startup Foundations
     {
-      id: 6,
-      title: 'Execution & Growth',
-      date: 'Phase 6',
-      content: 'Scale your operations and achieve sustainable growth. Optimize processes, expand market reach, analyze key metrics, secure funding rounds, and execute strategies that transform your startup into a market leader with lasting impact.',
-      category: 'Growth',
-      icon: TrendingUp,
-      relatedIds: [5, 1],
-      status: 'pending' as const,
-      energy: 70,
-    },
-    {
-      id: 5,
-      title: 'Promotion & Launch',
-      date: 'Phase 5',
-      content: 'Launch your product with maximum impact through strategic marketing and brand building. Develop compelling messaging, execute multi-channel campaigns, generate buzz, and create a powerful market presence that attracts early adopters.',
-      category: 'Marketing',
+      id: 1,
+      title: 'Startup Foundations',
+      date: 'Entrepreneur Track',
+      content: 'Transform your innovative ideas into viable business ventures. Learn lean startup methodology, validate your concepts, develop MVPs, and master the art of pitching to investors. Build the entrepreneurial mindset needed to disrupt industries.',
+      category: 'Entrepreneur',
       icon: Rocket,
-      relatedIds: [4, 6],
-      status: 'pending' as const,
-      energy: 75,
+      relatedIds: [2, 6],
+      status: 'completed' as const,
+      energy: 95,
     },
-    {
-      id: 4,
-      title: 'Team & Partners',
-      date: 'Phase 4',
-      content: 'Build your dream team and forge strategic partnerships. Recruit top talent, establish advisor relationships, cultivate investor connections, and create a network of mentors who will accelerate your startup\'s success.',
-      category: 'People',
-      icon: Users,
-      relatedIds: [3, 5],
-      status: 'in-progress' as const,
-      energy: 80,
-    },
-    {
-      id: 3,
-      title: 'Development',
-      date: 'Phase 3',
-      content: 'Build cutting-edge AI solutions through hands-on coding and implementation. Master modern development frameworks, implement machine learning algorithms, and create robust applications that solve real-world problems with innovative technology.',
-      category: 'Technical',
-      icon: Code,
-      relatedIds: [2, 4],
-      status: 'in-progress' as const,
-      energy: 85,
-    },
+    // 🔵 CAREER - Tech & Development
     {
       id: 2,
-      title: 'Program Design',
-      date: 'Phase 2',
-      content: 'Architect your product\'s foundation with user-centric design principles. Create wireframes, define technical requirements, establish system architecture, and build a scalable framework that brings your vision to life.',
-      category: 'Design',
-      icon: Layers,
+      title: 'Tech & Development',
+      date: 'Career Track',
+      content: 'Master modern development stacks and build production-grade applications. Learn full-stack development, cloud infrastructure, AI/ML integration, and DevOps practices that top companies demand from their engineering teams.',
+      category: 'Career',
+      icon: Code,
       relatedIds: [1, 3],
       status: 'in-progress' as const,
       energy: 90,
     },
+    // 🔴 ENTREPRENEUR - Growth & Marketing
     {
-      id: 1,
-      title: 'Idea & Planning',
-      date: 'Phase 1',
-      content: 'The foundation of Students Launchpad begins with defining a clear vision and purpose. The central idea is to create a learning ecosystem where students can explore skills in technology, innovation, and entrepreneurship. The purpose of this initiative is to bridge the gap between academic learning and real-world applications by offering mentorship, hands-on projects\'.',
-      category: 'Strategy',
-      icon: Lightbulb,
-      relatedIds: [2, 6],
+      id: 3,
+      title: 'Growth & Marketing',
+      date: 'Entrepreneur Track',
+      content: 'Drive explosive startup growth through strategic marketing. Master viral loops, content strategy, paid acquisition, SEO, and the art of turning users into passionate advocates who fuel your startup\'s organic expansion.',
+      category: 'Entrepreneur',
+      icon: TrendingUp,
+      relatedIds: [2, 4],
       status: 'completed' as const,
-      energy: 95,
+      energy: 85,
+    },
+    // 🔵 CAREER - Creative & Design
+    {
+      id: 4,
+      title: 'Creative & Design',
+      date: 'Career Track',
+      content: 'Craft compelling brand identities and user experiences that captivate. Master design systems, visual storytelling, UI/UX principles, and create designs that leave lasting impressions and differentiate products in the market.',
+      category: 'Career',
+      icon: Palette,
+      relatedIds: [3, 5],
+      status: 'in-progress' as const,
+      energy: 80,
+    },
+    // 🔴 ENTREPRENEUR - Business Operations
+    {
+      id: 5,
+      title: 'Business Operations',
+      date: 'Entrepreneur Track',
+      content: 'Build scalable business systems and operational excellence. Master financial modeling, team management, supply chain optimization, legal frameworks, and create the infrastructure that supports rapid startup growth.',
+      category: 'Entrepreneur',
+      icon: Building2,
+      relatedIds: [4, 6],
+      status: 'completed' as const,
+      energy: 75,
+    },
+    // 🔵 CAREER - Leadership & Management
+    {
+      id: 6,
+      title: 'Leadership & Management',
+      date: 'Career Track',
+      content: 'Develop executive presence and leadership capabilities. Master team dynamics, strategic planning, stakeholder management, and AI-powered decision making to lead organizations through digital transformation.',
+      category: 'Career',
+      icon: Users,
+      relatedIds: [5, 1],
+      status: 'in-progress' as const,
+      energy: 70,
     },
   ];
 
