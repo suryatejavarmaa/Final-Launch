@@ -32,7 +32,7 @@ export function GamificationSection() {
     return (
         <section
             id="gamification"
-            className="py-16 md:py-24 relative overflow-hidden"
+            className="py-14 md:py-20 relative overflow-hidden"
             style={{ backgroundColor: 'var(--lp-bg-solid)' }}
         >
             {/* Background Effects */}

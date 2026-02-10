@@ -10,7 +10,11 @@ export function SkillsSection() {
             id: 1,
             title: 'Startup Foundations',
             date: 'Entrepreneur Track',
-            content: 'Transform your innovative ideas into viable business ventures. Learn lean startup methodology, validate your concepts, develop MVPs, and master the art of pitching to investors. Build the entrepreneurial mindset needed to disrupt industries.',
+            content: [
+                'Master lean startup frameworks from ideation to MVP.',
+                'Validate business models & navigate early-stage challenges.',
+                'Build a solid foundation for a scalable venture.'
+            ] as any,
             category: 'Entrepreneur',
             icon: Rocket,
             relatedIds: [2, 6],
@@ -22,7 +26,11 @@ export function SkillsSection() {
             id: 2,
             title: 'Tech & Development',
             date: 'Career Track',
-            content: 'Master modern development stacks and build production-grade applications. Learn full-stack development, cloud infrastructure, AI/ML integration, and DevOps practices that top companies demand from their engineering teams.',
+            content: [
+                'Build production-grade apps with modern full-stack tech.',
+                'Master cloud infrastructure, DevOps, and scalable architecture.',
+                'Deploy robust, high-performance software solutions.'
+            ] as any,
             category: 'Career',
             icon: Code,
             relatedIds: [1, 3],
@@ -34,7 +42,11 @@ export function SkillsSection() {
             id: 3,
             title: 'Growth & Marketing',
             date: 'Entrepreneur Track',
-            content: 'Drive explosive startup growth through strategic marketing. Master viral loops, content strategy, paid acquisition, SEO, and the art of turning users into passionate advocates who fuel your startup\'s organic expansion.',
+            content: [
+                'Unlock explosive growth with data-driven strategies.',
+                'Master content marketing, SEO, and paid channels.',
+                'Optimize funnels for maximum conversion.'
+            ] as any,
             category: 'Entrepreneur',
             icon: TrendingUp,
             relatedIds: [2, 4],
@@ -46,7 +58,11 @@ export function SkillsSection() {
             id: 4,
             title: 'Creative & Design',
             date: 'Career Track',
-            content: 'Craft compelling brand identities and user experiences that captivate. Master design systems, visual storytelling, UI/UX principles, and create designs that leave lasting impressions and differentiate products in the market.',
+            content: [
+                'Craft brand identities that resonate deeply.',
+                'Master UI/UX principles for intuitive interfaces.',
+                'Tell compelling visual stories that elevate your product.'
+            ] as any,
             category: 'Career',
             icon: Palette,
             relatedIds: [3, 5],
@@ -58,7 +74,11 @@ export function SkillsSection() {
             id: 5,
             title: 'Business Operations',
             date: 'Entrepreneur Track',
-            content: 'Build scalable business systems and operational excellence. Master financial modeling, team management, supply chain optimization, legal frameworks, and create the infrastructure that supports rapid startup growth.',
+            content: [
+                'Build operational backbone with financial modeling.',
+                'Master legal frameworks and team management.',
+                'Ensure efficient scaling without friction.'
+            ] as any,
             category: 'Entrepreneur',
             icon: BarChart3,
             relatedIds: [4, 6],
@@ -70,7 +90,11 @@ export function SkillsSection() {
             id: 6,
             title: 'Leadership & Management',
             date: 'Career Track',
-            content: 'Develop executive presence and leadership capabilities. Master team dynamics, strategic planning, stakeholder management, and AI-powered decision making to lead organizations through digital transformation.',
+            content: [
+                'Cultivate executive presence and strategic decision-making.',
+                'Navigate organizational dynamics to inspire shared vision.',
+                'Develop emotional intelligence for high-performance teams.'
+            ] as any,
             category: 'Career',
             icon: Lightbulb,
             relatedIds: [5, 1],
@@ -82,36 +106,46 @@ export function SkillsSection() {
     return (
         <section
             id="skills"
-            className="relative overflow-hidden bg-[#020617]"
+            className="relative overflow-hidden bg-[#020617] py-10"
         >
             {/* Background Gradients */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 
-            <div className="relative z-10 container mx-auto px-4 pt-20 pb-0">
+            <div className="relative z-10 container mx-auto px-4 mb-4">
                 <motion.div
-                    className="text-center max-w-3xl mx-auto mb-12 lg:mb-0"
+                    className="text-center max-w-4xl mx-auto"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.7 }}
                 >
-                    <span className="inline-block py-1 px-3 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-widest uppercase mb-4">
-                        Curriculum
-                    </span>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                        What Students <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Actually Learn</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6 backdrop-blur-sm shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        <span className="text-xs font-semibold tracking-widest text-blue-400 uppercase">Interactive Curriculum</span>
+                    </div>
+
+                    <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
+                        What Students <br />
+                        <span className="block mt-2 lp-text-gradient font-extrabold pb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                            Actually Learn
+                        </span>
                     </h2>
-                    <p className="text-slate-400 text-lg leading-relaxed">
-                        Beyond theory, we focus on the high-impact skills that drive real-world success in both entrepreneurial ventures and corporate careers.
+
+                    <p className="text-slate-400 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed font-light">
+                        We don't just teach theory. We build <span className="text-white font-medium border-b border-blue-500/30 pb-0.5">market-ready capabilities</span> by combining an entrepreneurial mindset with high-demand technical skills.
                     </p>
                 </motion.div>
             </div>
 
             <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex-grow flex items-center"
             >
                 <RadialOrbitalTimeline
                     timelineData={timelineData}
