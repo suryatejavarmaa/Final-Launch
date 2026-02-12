@@ -1,36 +1,44 @@
 import { useEffect, useRef } from 'react';
+import { ShieldAlert, BookOpen } from 'lucide-react';
 import styles from './WhyDifferent.module.css';
 import HorizontalScrollSection from './HorizontalScrollSection';
 
 const FONTS = [
-    // Original modern fonts
+    // Original modern fonts (Keep)
     { family: "'Syne', sans-serif", style: "normal" },
+    { family: "'Italiana', serif", style: "normal" }, // New Elegant
     { family: "'Rubik Mono One', monospace", style: "normal" },
-    { family: "'Playfair Display', serif", style: "italic" },
+    { family: "'Cormorant Garamond', serif", style: "italic" }, // New Slanted
+    { family: "'Exo 2', sans-serif", style: "italic" }, // New Slanted Tech
+    { family: "'Playfair Display', serif", style: "italic" }, // Original Slanted
+    { family: "'Kanit', sans-serif", style: "italic" }, // New Slanted
     { family: "'Bebas Neue', sans-serif", style: "normal" },
+    { family: "'Teko', sans-serif", style: "normal" }, // New Tech
     { family: "'Unbounded', sans-serif", style: "normal" },
+    { family: "'Chakra Petch', sans-serif", style: "normal" }, // New Tech
+    { family: "'Chakra Petch', sans-serif", style: "italic" }, // New Tech Slanted
     { family: "'Abril Fatface', serif", style: "normal" },
 
-    // Slanted & Script fonts
-    { family: "'Lobster Two', cursive", style: "italic" },
-    { family: "'Pacifico', cursive", style: "normal" },
-    { family: "'Caveat', cursive", style: "normal" },
-
-    // Playful & Fun fonts
-    { family: "'Bangers', system-ui", style: "normal" },
-    { family: "'Fredoka One', system-ui", style: "normal" },
+    // Tech & Futuristic (Keep + New)
     { family: "'Righteous', system-ui", style: "normal" },
-    { family: "'Permanent Marker', cursive", style: "normal" },
-
-    // Futuristic & Tech fonts
+    { family: "'Michroma', sans-serif", style: "normal" }, // New Futuristic
     { family: "'Orbitron', sans-serif", style: "normal" },
+    { family: "'Orbitron', sans-serif", style: "italic" }, // New Futuristic Slanted
+    { family: "'Gruppo', sans-serif", style: "normal" }, // New Stylish
     { family: "'Audiowide', system-ui", style: "normal" },
+    { family: "'Syncopate', sans-serif", style: "normal" }, // New Modern
     { family: "'Monoton', system-ui", style: "normal" },
+    { family: "'Tilt Prism', system-ui", style: "normal" }, // New Slanted 3D
 
-    // Bold Display fonts
+    // Bold Display (Keep + New)
+    { family: "'Tenor Sans', sans-serif", style: "normal" }, // New Humanist
     { family: "'Bungee', system-ui", style: "normal" },
+    { family: "'Prata', serif", style: "normal" }, // New Elegant
     { family: "'Russo One', sans-serif", style: "normal" },
+    { family: "'Racing Sans One', system-ui", style: "normal" }, // New Slanted Speed
+    { family: "'Philosopher', sans-serif", style: "italic" }, // New Unique
     { family: "'Oswald', sans-serif", style: "normal" },
+    { family: "'Cinzel', serif", style: "normal" }, // New Classic
     { family: "'Raleway', sans-serif", style: "normal" }
 ];
 
@@ -60,7 +68,7 @@ function HeroPanel() {
             title.style.setProperty('font-family', FONTS[i].family, 'important');
             title.style.setProperty('font-style', FONTS[i].style, 'important');
             console.log(`Font changed to [${i}]:`, FONTS[i].family, FONTS[i].style);
-        }, 300);
+        }, 120);
 
         return () => {
             console.log('Font animation cleanup');
@@ -70,7 +78,7 @@ function HeroPanel() {
 
     return (
         <div className={`${styles.hero}`}>
-            <div className={styles.heroContent}>
+            <div className={styles.heroContent} data-hero-content>
                 <h1 className={styles.heroTitle}>
                     <span className={`${styles.heroLine} ${styles.heroWhy}`}>WHY</span>
                     <span className={`${styles.heroLine} ${styles.heroLaunchpad}`}>
@@ -100,14 +108,14 @@ function OldWayPanel() {
 
                     <div className={styles.features}>
                         <div className={styles.feature}>
-                            <div className={styles.icon} />
+                            <ShieldAlert className={styles.icon} />
                             <div>
                                 <h4 className={styles.oldTitle}>No Real Stakes</h4>
                                 <p className={styles.oldText}>Zero pressure. Zero growth.</p>
                             </div>
                         </div>
                         <div className={styles.feature}>
-                            <div className={styles.icon} />
+                            <BookOpen className={styles.icon} />
                             <div>
                                 <h4 className={styles.oldTitle}>Passive Learning</h4>
                                 <p className={styles.oldText}>Memorize → write → forget.</p>

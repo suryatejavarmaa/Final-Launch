@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import styles from './WhyDifferent.module.css'; // We'll share the module styles for layout
+import styles from './WhyDifferent.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,19 +20,45 @@ export default function HorizontalScrollSection({ panels }: HorizontalScrollSect
 
             if (!track || !section) return;
 
-            gsap.to(track, {
-                xPercent: -100 * (panels.length - 1),
-                ease: "none",
+            // Target only the text content inside the hero panel (not the background)
+            const heroText = section.querySelector('[data-hero-content]');
+
+            // Set initial state - text starts invisible and slightly below
+            if (heroText) {
+                gsap.set(heroText, { opacity: 0, y: 60 });
+            }
+
+            // Create a timeline for both phases
+            const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: section,
                     start: "top top",
-                    end: () => `+=${window.innerWidth * panels.length}`,
+                    // Short intro phase (35% of viewport height) + horizontal scroll
+                    end: () => `+=${window.innerHeight * 0.35 + window.innerWidth * panels.length}`,
                     scrub: 1,
                     pin: true,
                     anticipatePin: 1,
                     invalidateOnRefresh: true,
                 }
             });
+
+            // Phase 1: Quick fade in and slide up the text
+            if (heroText) {
+                tl.to(heroText, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "power2.out",
+                });
+            }
+
+            // Phase 2: Horizontal scroll of all panels
+            tl.to(track, {
+                xPercent: -100 * (panels.length - 1),
+                duration: panels.length,
+                ease: "none",
+            });
+
         }, sectionRef);
 
         return () => ctx.revert();
